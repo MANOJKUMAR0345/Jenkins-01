@@ -18,8 +18,8 @@ pipeline {
         stage('Verify index.html') {
             steps {
                 sh '''
-                  echo "Checking index.html..."
-                  test -f index.html
+                    echo "Checking index.html..."
+                    test -f index.html
                 '''
             }
         }
@@ -27,8 +27,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                  echo "Building Docker image..."
-                  docker build -t $IMAGE_NAME .
+                    echo "Building Docker image..."
+                    docker build -t $IMAGE_NAME .
                 '''
             }
         }
@@ -37,11 +37,11 @@ pipeline {
             steps {
                 sshagent(credentials: ['ec2-key']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no ec2-user@${EC2_IP} '
-                        docker stop ${CONTAINER} || true
-                        docker rm ${CONTAINER} || true
-                        docker run -d --name ${CONTAINER} -p 80:80 ${IMAGE_NAME}
-                    '
+                        ssh -o StrictHostKeyChecking=no ec2-user@${EC2_IP} '
+                            docker stop ${CONTAINER} || true
+                            docker rm ${CONTAINER} || true
+                            docker run -d --name ${CONTAINER} -p 80:80 ${IMAGE_NAME}
+                        '
                     """
                 }
             }
@@ -52,4 +52,9 @@ pipeline {
         success {
             echo "✅ Deployment successful!"
             echo "🌐 Application URL: http://${EC2_IP}/"
-
+        }
+        failure {
+            echo "❌ Deployment failed"
+        }
+    }
+}
