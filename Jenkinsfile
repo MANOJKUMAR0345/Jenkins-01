@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        EC2_IP     = "13.220.6.46"
+        EC2_IP     = "3.89.224.100"
         IMAGE_NAME = "jenkins-demo"
         CONTAINER  = "web"
     }
@@ -52,3 +52,4 @@ pipeline {
         success {
             echo "✅ Deployment successful!"
             echo "🌐 Application URL: http://${EC2_IP}/"
+
