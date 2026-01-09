@@ -1,0 +1,54 @@
+pipeline {
+    agent any
+
+    environment {
+        EC2_IP     = "13.220.6.46"
+        IMAGE_NAME = "jenkins-demo"
+        CONTAINER  = "web"
+    }
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/MANOJKUMAR0345/Jenkins-01.git'
+            }
+        }
+
+        stage('Verify index.html') {
+            steps {
+                sh '''
+                  echo "Checking index.html..."
+                  test -f index.html
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                  echo "Building Docker image..."
+                  docker build -t $IMAGE_NAME .
+                '''
+            }
+        }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(credentials: ['ec2-key']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ec2-user@${EC2_IP} '
+                        docker stop ${CONTAINER} || true
+                        docker rm ${CONTAINER} || true
+                        docker run -d --name ${CONTAINER} -p 80:80 ${IMAGE_NAME}
+                    '
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment successful!"
+            echo "🌐 Application URL: http://${EC2_IP}/"
